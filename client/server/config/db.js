@@ -6,22 +6,32 @@ const db = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
-  dateStrings:true
+  port: Number(process.env.DB_PORT) || 4000,
+
+  dateStrings: true,
+
+  ssl: {
+    minVersion: "TLSv1.2"
+  },
+
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
-
-
 
 db.getConnection((err, connection) => {
   if (err) {
-    console.log("❌ MySQL connection failed");
+    console.log("❌ TiDB connection failed");
     console.log(err.message);
     return;
   }
 
-  console.log("✅ MySQL connected successfully");
-
+  console.log("✅ TiDB connected successfully");
   connection.release();
 });
 
 module.exports = db.promise();
+
+
+///XC1QSFXWcCBF6wfQ///
+///6f2e8b5723203baefda0e8a5657b6479///
