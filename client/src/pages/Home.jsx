@@ -40,7 +40,7 @@ function Home() {
 
       try {
         const response = await fetch(
-          "http://localhost:5000/api/profile",
+          "https://eventease-india.onrender.com/api/profile",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -115,7 +115,7 @@ useEffect(() => {
       setEventsLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/events"
+        "https://eventease-india.onrender.com/api/events"
       );
 
       const data = await response.json();

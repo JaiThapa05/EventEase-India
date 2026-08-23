@@ -21,7 +21,7 @@ function Notifications() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/notifications",
+        "https://eventease-india.onrender.com/api/notifications",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -56,7 +56,7 @@ function Notifications() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/notifications/${notificationId}/read`,
+        `https://eventease-india.onrender.com/api/notifications/${notificationId}/read`,
         {
           method: "PUT",
           headers: {
@@ -95,7 +95,7 @@ function Notifications() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:5000/api/notifications/read-all",
+        "https://eventease-india.onrender.com/api/notifications/read-all",
         {
           method: "PUT",
           headers: {
@@ -133,7 +133,7 @@ function Notifications() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/notifications/${notificationId}`,
+        `https://eventease-india.onrender.com/api/notifications/${notificationId}`,
         {
           method: "DELETE",
           headers: {

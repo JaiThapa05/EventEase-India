@@ -353,7 +353,7 @@ function CreateEvent() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/events",
+        "https://eventease-india.onrender.com/api/events",
         {
           method: "POST",
 

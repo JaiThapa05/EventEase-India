@@ -21,7 +21,7 @@ function MyEvents() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/registrations/my-events",
+        "https://eventease-india.onrender.com/api/registrations/my-events",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -59,7 +59,7 @@ function MyEvents() {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/registrations/${registrationId}`,
+        `https://eventease-india.onrender.com/api/registrations/${registrationId}`,
         {
           method: "DELETE",
 

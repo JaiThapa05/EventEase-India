@@ -31,7 +31,7 @@ function Profile() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/profile",
+        "https://eventease-india.onrender.com/api/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -109,7 +109,7 @@ function Profile() {
     setMessage("Uploading photo...");
 
     const response = await fetch(
-      "http://localhost:5000/api/profile/photo",
+      "https://eventease-india.onrender.com/api/profile/photo",
       {
         method: "POST",
         headers: {
@@ -173,7 +173,7 @@ function Profile() {
     setMessage("");
 
     const response = await fetch(
-      "http://localhost:5000/api/profile/photo",
+      "https://eventease-india.onrender.com/api/profile/photo",
       {
         method: "POST",
 
@@ -238,7 +238,7 @@ function Profile() {
     const token = localStorage.getItem("token");
 
     const response = await fetch(
-      "http://localhost:5000/api/profile",
+      "https://eventease-india.onrender.com/api/profile",
       {
         method: "PUT",
 
@@ -377,7 +377,7 @@ function Profile() {
                 src={
                     previewPhoto.startsWith("http")
                     ? previewPhoto
-                    : `http://localhost:5000${previewPhoto}`
+                    : `https://eventease-india.onrender.com${previewPhoto}`
                 }
                 alt={profile?.name || "Profile"}
                 className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-indigo-100"

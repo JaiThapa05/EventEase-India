@@ -34,7 +34,7 @@ function LocationSelector({
         setStatesLoading(true);
 
         const response = await fetch(
-          "http://localhost:5000/api/profile/locations/states",
+          "https://eventease-india.onrender.com/api/profile/locations/states",
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -94,7 +94,7 @@ function LocationSelector({
         setDistrictsLoading(true);
 
         const response = await fetch(
-          `http://localhost:5000/api/profile/locations/districts/${stateId}`,
+          `https://eventease-india.onrender.com/api/profile/locations/districts/${stateId}`,
           {
             headers: {
               Authorization:
@@ -162,7 +162,7 @@ function LocationSelector({
           setLocationsLoading(true);
 
           const url =
-            `http://localhost:5000/api/profile/locations/search` +
+            `https://eventease-india.onrender.com/api/profile/locations/search` +
             `?districtId=${districtId}` +
             `&search=${encodeURIComponent(search)}`;
 
@@ -240,7 +240,7 @@ function LocationSelector({
         localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:5000/api/profile/manual-location",
+        "https://eventease-india.onrender.com/api/profile/manual-location",
         {
           method: "POST",
 

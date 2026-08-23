@@ -61,7 +61,7 @@ function EditEvent() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/events/${id}`
+        `https://eventease-india.onrender.com/api/events/${id}`
       );
 
       const data =
@@ -442,7 +442,7 @@ function EditEvent() {
 
       const response =
         await fetch(
-          `http://localhost:5000/api/events/${id}`,
+          `https://eventease-india.onrender.com/api/events/${id}`,
           {
             method: "PUT",
 
@@ -880,7 +880,7 @@ function EditEvent() {
                         "http"
                       )
                         ? formData.banner
-                        : `http://localhost:5000${formData.banner}`
+                        : `https://eventease-india.onrender.com${formData.banner}`
                     }
                     alt="Event Banner"
                     className="h-64 w-full object-contain p-3"

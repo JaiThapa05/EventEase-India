@@ -84,7 +84,7 @@ function Calendar() {
       return event.banner;
     }
 
-    return `http://localhost:5000${event.banner}`;
+    return `https://eventease-india.onrender.com${event.banner}`;
   };
 
 
@@ -98,7 +98,7 @@ function Calendar() {
       setError("");
 
       const response = await fetch(
-        "http://localhost:5000/api/events"
+        "https://eventease-india.onrender.com/api/events"
       );
 
       const data = await response.json();

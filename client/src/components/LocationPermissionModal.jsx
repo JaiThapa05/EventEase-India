@@ -75,7 +75,7 @@ function LocationPermissionModal() {
     try {
 
       const response = await fetch(
-        "http://localhost:5000/api/profile/location",
+        "https://eventease-india.onrender.com/api/profile/location",
         {
           method: "POST",
 

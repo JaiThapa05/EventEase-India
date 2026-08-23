@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import EventCard from "../components/EventCard";
+import API_URL from "../services/api";
 
 function Events() {
   const [events, setEvents] = useState([]);
@@ -22,8 +23,7 @@ function Events() {
       return "Date TBA";
     }
 
-    const dateString = String(eventDate)
-      .substring(0, 10);
+    const dateString = String(eventDate).substring(0, 10);
 
     const parts = dateString.split("-");
 
@@ -31,27 +31,31 @@ function Events() {
       return "Date TBA";
     }
 
-    const [year, month, day] =
-      parts.map(Number);
+    const [year, month, day] = parts.map(Number);
 
-    const date = new Date(
-      year,
-      month - 1,
-      day
-    );
+    if (
+      !year ||
+      !month ||
+      !day ||
+      month < 1 ||
+      month > 12 ||
+      day < 1 ||
+      day > 31
+    ) {
+      return "Date TBA";
+    }
+
+    const date = new Date(year, month - 1, day);
 
     if (Number.isNaN(date.getTime())) {
       return "Date TBA";
     }
 
-    return date.toLocaleDateString(
-      "en-IN",
-      {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }
-    );
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   };
 
   // ========================================
@@ -75,7 +79,7 @@ function Events() {
     const parts = value.split(":");
 
     if (parts.length < 2) {
-      return value;
+      return "Time TBA";
     }
 
     let hours = Number(parts[0]);
@@ -88,8 +92,7 @@ function Events() {
       return "Time TBA";
     }
 
-    const period =
-      hours >= 12 ? "PM" : "AM";
+    const period = hours >= 12 ? "PM" : "AM";
 
     hours = hours % 12;
 
@@ -97,10 +100,7 @@ function Events() {
       hours = 12;
     }
 
-    return `${String(hours).padStart(
-      2,
-      "0"
-    )}:${minutes} ${period}`;
+    return `${String(hours).padStart(2, "0")}:${minutes} ${period}`;
   };
 
   // ========================================
@@ -112,35 +112,29 @@ function Events() {
       setLoading(true);
       setError("");
 
+      // IMPORTANT:
+      // API_URL comes from services/api.js
       const response = await fetch(
-        "http://localhost:5000/api/events"
+        `${API_URL}/api/events`
       );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            "Failed to load events"
+          data.message || "Failed to load events"
         );
       }
 
       setEvents(
-        Array.isArray(data)
-          ? data
-          : []
+        Array.isArray(data) ? data : []
       );
-
     } catch (err) {
-      console.error(
-        "EVENTS ERROR:",
-        err
-      );
+      console.error("EVENTS ERROR:", err);
 
       setError(
-        "Unable to load events."
+        err.message || "Unable to load events."
       );
-
     } finally {
       setLoading(false);
     }
@@ -168,44 +162,44 @@ function Events() {
   }, [searchParams]);
 
   // ========================================
-  // FILTER
+  // FILTER EVENTS
   // ========================================
 
-  const filteredEvents = events.filter(
-    (event) => {
+  const filteredEvents = events.filter((event) => {
+    const searchText =
+      search.toLowerCase().trim();
 
-      const searchText =
-        search.toLowerCase().trim();
+    const locationText =
+      location.toLowerCase().trim();
 
-      const locationText =
-        location.toLowerCase().trim();
+    const title =
+      event.title?.toLowerCase() || "";
 
-      const matchesSearch =
-        !searchText ||
-        event.title
-          ?.toLowerCase()
-          .includes(searchText) ||
-        event.description
-          ?.toLowerCase()
-          .includes(searchText);
+    const description =
+      event.description?.toLowerCase() || "";
 
-      const matchesCategory =
-        category === "All" ||
-        event.category === category;
+    const eventLocation =
+      event.location?.toLowerCase() || "";
 
-      const matchesLocation =
-        !locationText ||
-        event.location
-          ?.toLowerCase()
-          .includes(locationText);
+    const matchesSearch =
+      !searchText ||
+      title.includes(searchText) ||
+      description.includes(searchText);
 
-      return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesLocation
-      );
-    }
-  );
+    const matchesCategory =
+      category === "All" ||
+      event.category === category;
+
+    const matchesLocation =
+      !locationText ||
+      eventLocation.includes(locationText);
+
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesLocation
+    );
+  });
 
   // ========================================
   // CLEAR FILTERS
@@ -224,23 +218,22 @@ function Events() {
   };
 
   // ========================================
-  // PREPARE EVENTS FOR CARDS
+  // PREPARE EVENTS
   // ========================================
 
-  const formattedEvents =
-    filteredEvents.map((event) => ({
+  const formattedEvents = filteredEvents.map(
+    (event) => ({
       ...event,
 
-      formatted_date:
-        formatEventDate(
-          event.event_date
-        ),
+      formatted_date: formatEventDate(
+        event.event_date
+      ),
 
-      formatted_time:
-        formatEventTime(
-          event.event_time
-        ),
-    }));
+      formatted_time: formatEventTime(
+        event.event_time
+      ),
+    })
+  );
 
   // ========================================
   // UI
@@ -253,25 +246,26 @@ function Events() {
           HEADER
       ======================================== */}
 
-      <section className="relative overflow-hidden bg-slate-950 px-5 py-16 text-white">
+      <section className="relative overflow-hidden bg-slate-950 px-4 py-12 text-white sm:px-6 sm:py-16 lg:px-8">
 
         <div className="absolute -left-32 -top-32 h-80 w-80 rounded-full bg-indigo-600/20 blur-3xl" />
 
         <div className="absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-violet-600/20 blur-3xl" />
 
-        <div className="relative mx-auto max-w-7xl">
+        <div className="relative mx-auto w-full max-w-7xl">
 
-          <p className="font-bold uppercase tracking-widest text-indigo-400">
+          <p className="text-sm font-bold uppercase tracking-widest text-indigo-400 sm:text-base">
             EVENTEASE INDIA
           </p>
 
-          <h1 className="mt-3 text-3xl font-black leading-tight sm:text-4xl lg:text-6xl">
+          <h1 className="mt-3 text-3xl font-black leading-tight sm:text-4xl md:text-5xl lg:text-6xl">
             Discover Events 🎉
           </h1>
 
-          <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-300">
-            Find technology, education, business, sports and
-            cultural events happening across India.
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
+            Find technology, education, business,
+            sports and cultural events happening
+            across India.
           </p>
 
         </div>
@@ -292,9 +286,9 @@ function Events() {
           !error &&
           events.length > 0 && (
 
-            <div className="mb-10 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-8 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:mb-10 sm:rounded-3xl sm:p-6">
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
 
                 {/* SEARCH */}
 
@@ -311,7 +305,7 @@ function Events() {
                       setSearch(e.target.value)
                     }
                     placeholder="🔎 Search event..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 sm:text-base"
                   />
 
                 </div>
@@ -329,7 +323,7 @@ function Events() {
                     onChange={(e) =>
                       setCategory(e.target.value)
                     }
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-indigo-500"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-indigo-500 sm:text-base"
                   >
 
                     <option value="All">
@@ -379,7 +373,7 @@ function Events() {
                       setLocation(e.target.value)
                     }
                     placeholder="📍 Search city/state..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 sm:text-base"
                   />
 
                 </div>
@@ -392,7 +386,7 @@ function Events() {
                 location ||
                 category !== "All") && (
 
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-5">
+                <div className="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
 
                   <p className="text-sm font-semibold text-slate-500">
 
@@ -408,7 +402,7 @@ function Events() {
 
                   <button
                     onClick={clearFilters}
-                    className="rounded-xl bg-slate-100 px-5 py-2.5 font-bold text-slate-700 transition hover:bg-slate-200"
+                    className="w-full rounded-xl bg-slate-100 px-5 py-2.5 font-bold text-slate-700 transition hover:bg-slate-200 sm:w-auto"
                   >
                     ✕ Clear Filters
                   </button>
@@ -427,7 +421,7 @@ function Events() {
 
         {loading && (
 
-          <div className="py-24 text-center">
+          <div className="py-20 text-center sm:py-24">
 
             <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
 
@@ -446,7 +440,7 @@ function Events() {
         {!loading &&
           error && (
 
-            <div className="rounded-3xl border border-red-200 bg-red-50 p-10 text-center">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center sm:rounded-3xl sm:p-10">
 
               <div className="text-5xl">
                 ⚠️
@@ -458,7 +452,7 @@ function Events() {
 
               <button
                 onClick={fetchEvents}
-                className="mt-5 rounded-xl bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700"
+                className="mt-5 w-full rounded-xl bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700 sm:w-auto"
               >
                 Try Again
               </button>
@@ -475,7 +469,7 @@ function Events() {
           !error &&
           events.length === 0 && (
 
-            <div className="rounded-3xl border border-slate-200 bg-white px-5 py-20 text-center shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-16 text-center shadow-sm sm:rounded-3xl sm:py-20">
 
               <div className="text-6xl">
                 📅
@@ -509,7 +503,7 @@ function Events() {
           events.length > 0 &&
           filteredEvents.length === 0 && (
 
-            <div className="rounded-3xl border border-slate-200 bg-white px-5 py-20 text-center shadow-sm">
+            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-16 text-center shadow-sm sm:rounded-3xl sm:py-20">
 
               <div className="text-6xl">
                 🔍
@@ -542,18 +536,16 @@ function Events() {
           !error &&
           formattedEvents.length > 0 && (
 
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-7 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-7">
 
-              {formattedEvents.map(
-                (event) => (
+              {formattedEvents.map((event) => (
 
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                  />
+                <EventCard
+                  key={event.id}
+                  event={event}
+                />
 
-                )
-              )}
+              ))}
 
             </div>
 

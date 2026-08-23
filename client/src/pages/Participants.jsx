@@ -24,7 +24,7 @@ function Participants() {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/events/${id}/participants`,
+        `https://eventease-india.onrender.com/api/events/${id}/participants`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -193,7 +193,7 @@ function Participants() {
                             participant.profile_photo
                             ? participant.profile_photo.startsWith("http")
                             ? participant.profile_photo
-                            : `http://localhost:5000${participant.profile_photo}`
+                            : `https://eventease-india.onrender.com${participant.profile_photo}`
                             : ""
                             }
                               alt={participant.name}

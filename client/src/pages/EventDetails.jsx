@@ -47,7 +47,7 @@ function EventDetails() {
       return banner;
     }
 
-    return `http://localhost:5000${banner}`;
+    return `https://eventease-india.onrender.com${banner}`;
   };
 
 
@@ -151,7 +151,7 @@ const formatEventTime = (eventTime) => {
         setError("");
 
         const response = await fetch(
-          `http://localhost:5000/api/events/${id}`
+          `https://eventease-india.onrender.com/api/events/${id}`
         );
 
         const data =
@@ -193,7 +193,7 @@ const formatEventTime = (eventTime) => {
   const fetchReviews = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reviews/event/${id}`
+        `https://eventease-india.onrender.com/api/reviews/event/${id}`
       );
 
       const data =
@@ -241,7 +241,7 @@ const formatEventTime = (eventTime) => {
         }
 
         const response = await fetch(
-          "http://localhost:5000/api/registrations",
+          "https://eventease-india.onrender.com/api/registrations",
           {
             method: "POST",
 
@@ -319,7 +319,7 @@ const formatEventTime = (eventTime) => {
         }
 
         const response = await fetch(
-          "http://localhost:5000/api/registrations/external-start",
+          "https://eventease-india.onrender.com/api/registrations/external-start",
           {
             method: "POST",
 
@@ -422,7 +422,7 @@ const formatEventTime = (eventTime) => {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/reviews",
+        "https://eventease-india.onrender.com/api/reviews",
         {
           method: "POST",
 
@@ -811,7 +811,7 @@ const formatEventTime = (eventTime) => {
                               "https://"
                             )
                             ? review.profile_photo
-                            : `http://localhost:5000${review.profile_photo}`
+                            : `https://eventease-india.onrender.com${review.profile_photo}`
                           : "";
 
                       return (

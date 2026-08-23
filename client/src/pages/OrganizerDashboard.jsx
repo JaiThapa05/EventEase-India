@@ -25,7 +25,7 @@ function OrganizerDashboard() {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/events/my-events",
+        "https://eventease-india.onrender.com/api/events/my-events",
         {
           headers: {
             Authorization:
@@ -102,7 +102,7 @@ function OrganizerDashboard() {
 
       const response =
         await fetch(
-          `http://localhost:5000/api/events/${eventId}`,
+          `https://eventease-india.onrender.com/api/events/${eventId}`,
           {
             method: "DELETE",
             headers: {
@@ -330,7 +330,7 @@ function OrganizerDashboard() {
                         "http"
                       )
                       ? event.banner
-                      : `http://localhost:5000${event.banner}`
+                      : `https://eventease-india.onrender.com${event.banner}`
                     : "";
 
                 return (
