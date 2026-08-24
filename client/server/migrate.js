@@ -3,15 +3,13 @@ require("dotenv").config();
 const mysql = require("mysql2/promise");
 
 async function migrate() {
-
   let localDB;
   let tidbDB;
 
   try {
-
-    // ========================================
-    // XAMPP MYSQL
-    // ========================================
+    // ================================
+    // XAMPP
+    // ================================
 
     localDB = await mysql.createConnection({
       host: "localhost",
@@ -23,10 +21,9 @@ async function migrate() {
 
     console.log("✅ XAMPP connected");
 
-
-    // ========================================
-    // TIDB CLOUD
-    // ========================================
+    // ================================
+    // TIDB
+    // ================================
 
     tidbDB = await mysql.createConnection({
       host: process.env.DB_HOST,
@@ -42,145 +39,262 @@ async function migrate() {
 
     console.log("✅ TiDB connected");
 
-
-    // ========================================
+    // ================================
     // TABLES
-    // ========================================
+    // ================================
 
     const tables = [
+      "states",
+      "districts",
+      "locations",
       "users",
       "events",
       "registrations",
       "reviews",
-      "notifications"
+      "notifications",
+      "village_import"
     ];
 
-
-    // ========================================
-    // FOREIGN KEYS OFF
-    // ========================================
+    const BATCH_SIZE = 2000;
 
     await tidbDB.query(
       "SET FOREIGN_KEY_CHECKS = 0"
     );
 
-
-    // ========================================
-    // MIGRATE
-    // ========================================
+    // ================================
+    // MIGRATE TABLES
+    // ================================
 
     for (const table of tables) {
 
       console.log("");
-      console.log("📦 Migrating:", table);
+      console.log("================================");
+      console.log(`📦 Migrating: ${table}`);
+      console.log("================================");
 
-
-      // Get XAMPP data
-
-      const [rows] = await localDB.query(
-        `SELECT * FROM \`${table}\``
+      // Count local rows
+      const [[count]] = await localDB.query(
+        `SELECT COUNT(*) AS total
+         FROM \`${table}\``
       );
 
-      console.log(
-        `Found ${rows.length} rows`
-      );
+      const total = Number(count.total);
 
+      console.log(`📊 Found ${total} rows`);
 
-      if (rows.length === 0) {
-
-        console.log(
-          `⚠️ ${table} is empty`
-        );
-
+      if (total === 0) {
+        console.log(`⚠️ ${table} is empty`);
         continue;
       }
 
-
       // Get TiDB columns
-
       const [columns] = await tidbDB.query(
         `SHOW COLUMNS FROM \`${table}\``
       );
 
+      const tidbColumns = columns.map(
+        column => column.Field
+      );
 
-      const tidbColumns =
-        columns.map(
-          column => column.Field
+      // Clear TiDB table
+      await tidbDB.query(
+        `DELETE FROM \`${table}\``
+      );
+
+      console.log("🧹 Existing TiDB data cleared");
+
+      // ================================
+      // GET PRIMARY KEY
+      // ================================
+
+      const primaryKeyColumn =
+        columns.find(
+          column => column.Key === "PRI"
         );
 
+      // ================================
+      // TABLE WITH PRIMARY KEY
+      // ================================
 
-      // Insert every row
+      if (primaryKeyColumn) {
 
-      for (const row of rows) {
+        const pk = primaryKeyColumn.Field;
 
-        const columnNames =
-          Object.keys(row).filter(
-            column =>
-              tidbColumns.includes(column)
+        let lastId = 0;
+        let migrated = 0;
+
+        while (true) {
+
+          const [rows] = await localDB.query(
+            `SELECT *
+             FROM \`${table}\`
+             WHERE \`${pk}\` > ?
+             ORDER BY \`${pk}\` ASC
+             LIMIT ?`,
+            [
+              lastId,
+              BATCH_SIZE
+            ]
           );
 
+          if (rows.length === 0) {
+            break;
+          }
 
-        const values =
-          columnNames.map(
-            column => row[column]
-          );
-
-
-        const placeholders =
-          columnNames
-            .map(() => "?")
-            .join(", ");
-
-
-        const columnSQL =
-          columnNames
-            .map(
+          const columnNames =
+            Object.keys(rows[0]).filter(
               column =>
-                `\`${column}\``
-            )
-            .join(", ");
+                tidbColumns.includes(column)
+            );
 
+          const columnSQL =
+            columnNames
+              .map(
+                column => `\`${column}\``
+              )
+              .join(", ");
 
-        const sql = `
-          INSERT INTO \`${table}\`
-          (${columnSQL})
-          VALUES (${placeholders})
-        `;
+          const placeholders =
+            rows
+              .map(
+                () =>
+                  `(${columnNames
+                    .map(() => "?")
+                    .join(", ")})`
+              )
+              .join(", ");
 
+          const values = [];
 
-        await tidbDB.query(
-          sql,
-          values
+          for (const row of rows) {
+            for (const column of columnNames) {
+              values.push(row[column]);
+            }
+          }
+
+          const sql = `
+            INSERT INTO \`${table}\`
+            (${columnSQL})
+            VALUES ${placeholders}
+          `;
+
+          await tidbDB.query(
+            sql,
+            values
+          );
+
+          migrated += rows.length;
+
+          lastId =
+            rows[rows.length - 1][pk];
+
+          const percent =
+            ((migrated / total) * 100)
+              .toFixed(2);
+
+          console.log(
+            `🚀 ${table}: ${migrated}/${total} (${percent}%)`
+          );
+        }
+
+        console.log(
+          `🎉 ${table} completed: ${migrated} rows`
+        );
+
+      } else {
+
+        // ================================
+        // TABLE WITHOUT PRIMARY KEY
+        // ================================
+
+        const [rows] = await localDB.query(
+          `SELECT * FROM \`${table}\``
+        );
+
+        for (
+          let i = 0;
+          i < rows.length;
+          i += BATCH_SIZE
+        ) {
+
+          const batch =
+            rows.slice(
+              i,
+              i + BATCH_SIZE
+            );
+
+          if (batch.length === 0) {
+            continue;
+          }
+
+          const columnNames =
+            Object.keys(batch[0]).filter(
+              column =>
+                tidbColumns.includes(column)
+            );
+
+          const columnSQL =
+            columnNames
+              .map(
+                column => `\`${column}\``
+              )
+              .join(", ");
+
+          const placeholders =
+            batch
+              .map(
+                () =>
+                  `(${columnNames
+                    .map(() => "?")
+                    .join(", ")})`
+              )
+              .join(", ");
+
+          const values = [];
+
+          for (const row of batch) {
+            for (const column of columnNames) {
+              values.push(row[column]);
+            }
+          }
+
+          await tidbDB.query(
+            `
+              INSERT INTO \`${table}\`
+              (${columnSQL})
+              VALUES ${placeholders}
+            `,
+            values
+          );
+
+          console.log(
+            `🚀 ${table}: ${Math.min(
+              i + BATCH_SIZE,
+              rows.length
+            )}/${rows.length}`
+          );
+        }
+
+        console.log(
+          `🎉 ${table} completed`
         );
       }
-
-
-      console.log(
-        `✅ ${rows.length} rows migrated`
-      );
     }
-
-
-    // ========================================
-    // FOREIGN KEYS ON
-    // ========================================
 
     await tidbDB.query(
       "SET FOREIGN_KEY_CHECKS = 1"
     );
 
-
     console.log("");
-    console.log("==============================");
-    console.log("🎉 MIGRATION COMPLETED");
-    console.log("==============================");
-
+    console.log("================================");
+    console.log("🎉 ALL MIGRATIONS COMPLETED");
+    console.log("================================");
 
   } catch (error) {
 
     console.error("");
     console.error("❌ MIGRATION FAILED");
-    console.error(error.message);
+    console.error(error);
 
   } finally {
 
@@ -192,12 +306,8 @@ async function migrate() {
       await tidbDB.end();
     }
 
+    console.log("🔌 Connections closed");
   }
 }
-
-
-// ========================================
-// START
-// ========================================
 
 migrate();
