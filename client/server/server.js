@@ -52,7 +52,9 @@ const {
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "EventEase India API is running 🚀"
+    message: "EventEase India API is running 🚀",
+    server: "Render",
+    database: process.env.DB_NAME || "NOT CONFIGURED"
   });
 });
 
