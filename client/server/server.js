@@ -202,7 +202,7 @@ app.listen(
   () => {
 
     console.log(
-      `🚀 Server running on http://localhost:${PORT}`
+    `🚀 Server running on port ${PORT}`
     );
 
   }
