@@ -141,17 +141,15 @@ router.get("/event/:eventId", async (req, res) => {
 
 router.get("/event/:eventId", async (req, res) => {
   try {
-
     const { eventId } = req.params;
 
-    console.log("🔥 GET REVIEWS ROUTE HIT");
+    console.log("🔍 REVIEWS REQUEST");
     console.log("EVENT ID:", eventId);
 
     const [reviews] = await db.query(
       `SELECT
         reviews.id,
         reviews.event_id,
-        reviews.user_id,
         reviews.rating,
         reviews.comment,
         reviews.created_at,
@@ -165,19 +163,12 @@ router.get("/event/:eventId", async (req, res) => {
       [eventId]
     );
 
-    console.log(
-      "⭐ REVIEWS FROM DATABASE:",
-      reviews
-    );
+    console.log("⭐ REVIEWS FOUND:", reviews);
 
     res.json(reviews);
 
   } catch (error) {
-
-    console.error(
-      "GET REVIEWS ERROR:",
-      error
-    );
+    console.error("GET REVIEWS ERROR:", error);
 
     res.status(500).json({
       message: "Failed to fetch reviews",
