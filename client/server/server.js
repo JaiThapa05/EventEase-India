@@ -48,6 +48,14 @@ const {
 // GLOBAL MIDDLEWARE
 // ========================================
 
+
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "EventEase India API is running 🚀"
+  });
+});
+
 app.use(cors());
 
 app.use(
