@@ -66,9 +66,10 @@ app.get("/", (req, res) => {
 app.get("/api/test", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "API is working",
+    message: "EventEase API is working 🚀",
   });
 });
+
 
 // ========================================
 // STATIC UPLOADS
@@ -96,6 +97,9 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/profile", profileRoutes);
 
 app.use("/api/contact", contactRoutes);
+
+
+
 
 // ========================================
 // TEST SINGLE EVENT
