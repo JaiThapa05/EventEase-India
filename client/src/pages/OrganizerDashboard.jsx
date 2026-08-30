@@ -17,7 +17,7 @@ function OrganizerDashboard() {
       setMessage("");
 
       const token =
-        localStorage.getItem("token");
+        sessionStorage.getItem("token");
 
       if (!token) {
         setMessage("Please login first.");
@@ -25,7 +25,7 @@ function OrganizerDashboard() {
       }
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/events/my-events",
+        "https://https://eventease-india-api.onrender.com/api/events/my-events",
         {
           headers: {
             Authorization:
@@ -98,11 +98,11 @@ function OrganizerDashboard() {
     try {
 
       const token =
-        localStorage.getItem("token");
+        sessionStorage.getItem("token");
 
       const response =
         await fetch(
-          `https://eventease-india.onrender.com/api/events/${eventId}`,
+          `https://https://eventease-india-api.onrender.com/api/events/${eventId}`,
           {
             method: "DELETE",
             headers: {
@@ -330,7 +330,7 @@ function OrganizerDashboard() {
                         "http"
                       )
                       ? event.banner
-                      : `https://eventease-india.onrender.com${event.banner}`
+                      : `https://https://eventease-india-api.onrender.com${event.banner}`
                     : "";
 
                 return (

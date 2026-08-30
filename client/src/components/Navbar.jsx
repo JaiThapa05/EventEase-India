@@ -6,10 +6,10 @@ function Navbar() {
 
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const user = JSON.parse(
-    localStorage.getItem("user") || "null"
+    sessionStorage.getItem("user") || "null"
   );
 
   // ========================================
@@ -17,8 +17,8 @@ function Navbar() {
   // ========================================
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
 
     setMenuOpen(false);
 

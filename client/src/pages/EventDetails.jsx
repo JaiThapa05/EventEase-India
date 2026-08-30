@@ -232,7 +232,7 @@ function EventDetails() {
       setRegistering(true);
       setRegisterMessage("");
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         setRegisterMessage(
@@ -298,7 +298,7 @@ function EventDetails() {
       setRegistering(true);
       setRegisterMessage("");
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         setRegisterMessage(
@@ -336,7 +336,7 @@ function EventDetails() {
         );
       }
 
-      localStorage.setItem(
+      sessionStorage.setItem(
         "pendingExternalRegistration",
         JSON.stringify({
           registrationId:
@@ -381,7 +381,7 @@ function EventDetails() {
       setReviewLoading(true);
       setReviewMessage("");
 
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         setReviewMessage(
@@ -587,433 +587,370 @@ function EventDetails() {
           RIGHT = About + Rate + Reviews
       ================================================== */}
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
 
-        <div
-          className="
-            grid
-            grid-cols-1
-            gap-8
-            lg:grid-cols-[320px_minmax(0,1fr)]
-            lg:items-start
-          "
-        >
+  <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
 
-          {/* ==================================================
-              LEFT SIDE
-              EVENT INFORMATION
-          ================================================== */}
+    {/* ==================================================
+        LEFT SIDE - EVENT DETAILS
+    ================================================== */}
 
-          <aside className="w-full">
+    <section className="min-w-0 lg:col-span-2">
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg lg:sticky lg:top-24">
+      {/* ABOUT THIS EVENT */}
 
-              <h2 className="mb-7 text-2xl font-black text-slate-900">
-                Event Information
-              </h2>
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
 
-              {/* DATE */}
+        <h2 className="text-2xl font-black text-slate-900 sm:text-3xl">
+          About This Event
+        </h2>
 
-              <div className="mb-6 flex gap-4">
+        <div className="mt-4 h-1 w-16 rounded-full bg-indigo-600" />
 
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-xl">
-                  📅
-                </div>
+        <p className="mt-6 whitespace-pre-line text-base leading-8 text-slate-600">
+          {event.description || "No description available."}
+        </p>
 
-                <div className="min-w-0">
+      </div>
 
-                  <p className="text-sm font-medium text-slate-400">
-                    Date
-                  </p>
 
-                  <p className="mt-1 break-words font-semibold text-slate-800">
-                    {formattedDate}
-                  </p>
+      {/* EVENT DETAILS / ADDITIONAL CONTENT */}
 
-                </div>
+      {/* 
+        Agar tumhare current code mein
+        event details ka koi aur section hai,
+        usko bhi isi LEFT SIDE ke andar rakho.
+      */}
 
-              </div>
+    </section>
 
-              {/* TIME */}
 
-              <div className="mb-6 flex gap-4">
+    {/* ==================================================
+        RIGHT SIDE - OTHER THINGS
+    ================================================== */}
 
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-xl">
-                  ⏰
-                </div>
+    <aside className="min-w-0 lg:col-span-1">
 
-                <div className="min-w-0">
+      <div className="space-y-8 lg:sticky lg:top-24">
 
-                  <p className="text-sm font-medium text-slate-400">
-                    Time
-                  </p>
+        {/* ==================================================
+            EVENT INFORMATION
+        ================================================== */}
 
-                  <p className="mt-1 font-semibold text-slate-800">
-                    {formattedTime}
-                  </p>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
 
-                </div>
+          <h2 className="mb-7 text-2xl font-black text-slate-900">
+            Event Information
+          </h2>
 
-              </div>
 
-              {/* LOCATION */}
+          {/* DATE */}
 
-              <div className="mb-6 flex gap-4">
+          <div className="mb-6 flex gap-4">
 
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-100 text-xl">
-                  📍
-                </div>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-xl">
+              📅
+            </div>
 
-                <div className="min-w-0">
+            <div className="min-w-0">
 
-                  <p className="text-sm font-medium text-slate-400">
-                    Location
-                  </p>
+              <p className="text-sm font-medium text-slate-400">
+                Date
+              </p>
 
-                  <p className="mt-1 break-words font-semibold text-slate-800">
-                    {event.location || "India"}
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* CAPACITY */}
-
-              <div className="mb-6 flex gap-4">
-
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-xl">
-                  👥
-                </div>
-
-                <div className="min-w-0">
-
-                  <p className="text-sm font-medium text-slate-400">
-                    Capacity
-                  </p>
-
-                  <p className="mt-1 font-semibold text-slate-800">
-                    {event.capacity
-                      ? `${event.capacity} participants`
-                      : "Unlimited"}
-                  </p>
-
-                </div>
-
-              </div>
-
-              {/* OFFICIAL ATTENDANCE */}
-
-              {event.official_attendees && (
-                <div className="mb-7 flex gap-4">
-
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-xl">
-                    🌍
-                  </div>
-
-                  <div className="min-w-0">
-
-                    <p className="text-sm font-medium text-slate-400">
-                      Official Attendance
-                    </p>
-
-                    <p className="mt-1 break-words font-semibold text-slate-800">
-                      {event.official_attendees}
-                    </p>
-
-                  </div>
-
-                </div>
-              )}
-
-              <div className="my-6 border-t border-slate-200" />
-
-              {/* REGISTRATION */}
-
-              {isExternalEvent ? (
-                <div>
-
-                  <button
-                    type="button"
-                    onClick={
-                      handleExternalRegistration
-                    }
-                    disabled={registering}
-                    className="w-full rounded-xl bg-indigo-600 px-4 py-4 text-base font-bold text-white shadow-lg transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-                  >
-                    {registering
-                      ? "Starting..."
-                      : "🎟️ Register on Official Website ↗"}
-                  </button>
-
-                  <p className="mt-3 text-center text-xs leading-5 text-slate-500">
-                    Registration is completed on the organizer's website.
-                  </p>
-
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={
-                    handleInternalRegistration
-                  }
-                  disabled={registering}
-                  className="w-full rounded-xl bg-indigo-600 px-4 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-                >
-                  {registering
-                    ? "Registering..."
-                    : "🎟️ Register for Event"}
-                </button>
-              )}
-
-              {registerMessage && (
-                <div className="mt-4 rounded-xl bg-indigo-50 p-4 text-center text-sm font-semibold text-indigo-700">
-                  {registerMessage}
-                </div>
-              )}
+              <p className="mt-1 break-words font-semibold text-slate-800">
+                {formattedDate}
+              </p>
 
             </div>
 
-          </aside>
+          </div>
 
-          {/* ==================================================
-              RIGHT SIDE
-              ABOUT + RATE + REVIEWS
-          ================================================== */}
 
-          <div className="min-w-0">
+          {/* TIME */}
 
-            {/* ==================================================
-                ABOUT THIS EVENT
-            ================================================== */}
+          <div className="mb-6 flex gap-4">
 
-            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-100 text-xl">
+              ⏰
+            </div>
 
-              <h2 className="text-2xl font-black text-slate-900 sm:text-3xl">
-                About This Event
-              </h2>
+            <div className="min-w-0">
 
-              <div className="mt-5 h-1 w-16 rounded-full bg-indigo-600" />
-
-              <p className="mt-6 whitespace-pre-line text-base leading-8 text-slate-600">
-                {event.description ||
-                  "No description available."}
+              <p className="text-sm font-medium text-slate-400">
+                Time
               </p>
 
-            </section>
-
-            {/* ==================================================
-                RATE THIS EVENT
-            ================================================== */}
-
-            <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-
-              <h2 className="text-2xl font-black text-slate-900 sm:text-3xl">
-                ⭐ Rate This Event
-              </h2>
-
-              <p className="mt-2 text-slate-500">
-                Share your experience with other participants.
+              <p className="mt-1 font-semibold text-slate-800">
+                {formattedTime}
               </p>
 
-              <form
-                onSubmit={submitReview}
-                className="mt-7"
-              >
-
-                <label className="mb-3 block font-bold text-slate-700">
-                  Your Rating
-                </label>
-
-                <div className="mb-7 flex gap-2 text-3xl">
-
-                  {[1, 2, 3, 4, 5].map(
-                    (star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() =>
-                          setRating(star)
-                        }
-                        className="transition hover:scale-110"
-                        aria-label={`Rate ${star} stars`}
-                      >
-                        {star <= rating
-                          ? "⭐"
-                          : "☆"}
-                      </button>
-                    )
-                  )}
-
-                </div>
-
-                <label className="mb-2 block font-bold text-slate-700">
-                  Your Review
-                </label>
-
-                <textarea
-                  value={comment}
-                  onChange={(e) =>
-                    setComment(e.target.value)
-                  }
-                  placeholder="Tell us about your experience..."
-                  rows={5}
-                  className="w-full resize-none rounded-xl border border-slate-200 p-4 text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {reviewMessage && (
-                  <div className="mt-4 rounded-xl bg-indigo-50 p-4 text-sm font-semibold text-indigo-700">
-                    {reviewMessage}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={reviewLoading}
-                  className="mt-5 rounded-xl bg-indigo-600 px-7 py-3.5 font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {reviewLoading
-                    ? "Submitting..."
-                    : "Submit Review"}
-                </button>
-
-              </form>
-
-            </section>
-
-            {/* ==================================================
-                PARTICIPANT REVIEWS
-            ================================================== */}
-
-            <section className="mt-8">
-
-              <h2 className="mb-6 text-2xl font-black text-slate-900 sm:text-3xl">
-                💬 Participant Reviews
-              </h2>
-
-              {reviews.length === 0 ? (
-
-                <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-
-                  <div className="mb-3 text-4xl">
-                    💭
-                  </div>
-
-                  <p className="font-medium text-slate-500">
-                    No reviews yet.
-                  </p>
-
-                  <p className="mt-1 text-sm text-slate-400">
-                    Be the first to review this event!
-                  </p>
-
-                </div>
-
-              ) : (
-
-                <div className="space-y-5">
-
-                  {reviews.map((review) => {
-
-                    const profileImage =
-                      getImageUrl(
-                        review.profile_photo
-                      );
-
-                    const reviewRating =
-                      Math.max(
-                        0,
-                        Math.min(
-                          5,
-                          Number(
-                            review.rating
-                          ) || 0
-                        )
-                      );
-
-                    return (
-                      <article
-                        key={review.id}
-                        className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
-                      >
-
-                        <div className="flex items-center gap-4">
-
-                          {profileImage ? (
-
-                            <img
-                              src={profileImage}
-                              alt={
-                                review.name ||
-                                "Participant"
-                              }
-                              className="h-12 w-12 shrink-0 rounded-full object-cover"
-                              onError={(e) => {
-                                e.currentTarget.style.display =
-                                  "none";
-                              }}
-                            />
-
-                          ) : (
-
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-600">
-                              {review.name
-                                ?.charAt(0)
-                                ?.toUpperCase() ||
-                                "U"}
-                            </div>
-
-                          )}
-
-                          <div className="min-w-0">
-
-                            <h3 className="truncate font-bold text-slate-900">
-                              {review.name ||
-                                "Participant"}
-                            </h3>
-
-                            <div className="mt-1 text-sm">
-
-                              {"⭐".repeat(
-                                reviewRating
-                              )}
-
-                              {reviewRating < 5 && (
-                                <span className="text-slate-300">
-                                  {"⭐".repeat(
-                                    5 -
-                                      reviewRating
-                                  )}
-                                </span>
-                              )}
-
-                            </div>
-
-                          </div>
-
-                        </div>
-
-                        {review.comment && (
-                          <p className="mt-5 whitespace-pre-line leading-7 text-slate-600">
-                            {review.comment}
-                          </p>
-                        )}
-
-                      </article>
-                    );
-                  })}
-
-                </div>
-
-              )}
-
-            </section>
+            </div>
 
           </div>
 
+
+          {/* LOCATION */}
+
+          <div className="mb-6 flex gap-4">
+
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-100 text-xl">
+              📍
+            </div>
+
+            <div className="min-w-0">
+
+              <p className="text-sm font-medium text-slate-400">
+                Location
+              </p>
+
+              <p className="mt-1 break-words font-semibold text-slate-800">
+                {event.location || "Location TBA"}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          {/* CAPACITY */}
+
+          <div className="mb-6 flex gap-4">
+
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-xl">
+              👥
+            </div>
+
+            <div className="min-w-0">
+
+              <p className="text-sm font-medium text-slate-400">
+                Capacity
+              </p>
+
+              <p className="mt-1 font-semibold text-slate-800">
+                {event.capacity
+                  ? `${event.capacity} participants`
+                  : "Unlimited"}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="my-6 border-t border-slate-200" />
+
+
+          {/* REGISTER */}
+
+          {isExternalEvent ? (
+
+            <button
+              type="button"
+              onClick={handleExternalRegistration}
+              disabled={registering}
+              className="w-full rounded-xl bg-indigo-600 px-4 py-4 text-base font-bold text-white shadow-lg transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {registering
+                ? "Starting..."
+                : "🎟️ Register on Official Website ↗"}
+            </button>
+
+          ) : (
+
+            <button
+              type="button"
+              onClick={handleInternalRegistration}
+              disabled={registering}
+              className="w-full rounded-xl bg-indigo-600 px-4 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            >
+              {registering
+                ? "Registering..."
+                : "🎟️ Register for Event"}
+            </button>
+
+          )}
+
+          {registerMessage && (
+            <div className="mt-4 rounded-xl bg-indigo-50 p-4 text-center text-sm font-semibold text-indigo-700">
+              {registerMessage}
+            </div>
+          )}
+
         </div>
 
-      </main>
+
+        {/* ==================================================
+            RATE THIS EVENT
+        ================================================== */}
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+
+          <h2 className="text-2xl font-black text-slate-900">
+            ⭐ Rate This Event
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Share your experience with other participants.
+          </p>
+
+
+          <form
+            onSubmit={submitReview}
+            className="mt-6"
+          >
+
+            <label className="mb-3 block font-bold text-slate-700">
+              Your Rating
+            </label>
+
+            <div className="mb-6 flex gap-1 text-3xl">
+
+              {[1, 2, 3, 4, 5].map((star) => (
+
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setRating(star)}
+                  className="transition hover:scale-110"
+                >
+                  {star <= rating ? "⭐" : "☆"}
+                </button>
+
+              ))}
+
+            </div>
+
+
+            <label className="mb-2 block font-bold text-slate-700">
+              Your Review
+            </label>
+
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Tell us about your experience..."
+              rows={4}
+              className="w-full resize-none rounded-xl border border-slate-200 p-4 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+            />
+
+
+            {reviewMessage && (
+              <div className="mt-3 rounded-xl bg-indigo-50 p-3 text-sm font-semibold text-indigo-700">
+                {reviewMessage}
+              </div>
+            )}
+
+
+            <button
+              type="submit"
+              disabled={reviewLoading}
+              className="mt-4 w-full rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {reviewLoading
+                ? "Submitting..."
+                : "Submit Review"}
+            </button>
+
+          </form>
+
+        </div>
+
+
+        {/* ==================================================
+            PARTICIPANT REVIEWS
+        ================================================== */}
+
+        <div>
+
+          <h2 className="mb-5 text-2xl font-black text-slate-900">
+            💬 Participant Reviews
+          </h2>
+
+
+          {reviews.length === 0 ? (
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+
+              <div className="text-4xl">
+                💭
+              </div>
+
+              <p className="mt-3 font-semibold text-slate-500">
+                No reviews yet.
+              </p>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Be the first to review this event!
+              </p>
+
+            </div>
+
+          ) : (
+
+            <div className="space-y-4">
+
+              {reviews.map((review) => (
+
+                <article
+                  key={review.id}
+                  className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                >
+
+                  <div className="flex items-center gap-3">
+
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-600">
+                      {review.name
+                        ?.charAt(0)
+                        ?.toUpperCase() || "U"}
+                    </div>
+
+                    <div className="min-w-0">
+
+                      <h3 className="truncate font-bold text-slate-900">
+                        {review.name || "Participant"}
+                      </h3>
+
+                      <div className="text-sm">
+                        {"⭐".repeat(
+                          Math.max(
+                            0,
+                            Math.min(
+                              5,
+                              Number(review.rating) || 0
+                            )
+                          )
+                        )}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  {review.comment && (
+                    <p className="mt-4 whitespace-pre-line text-sm leading-6 text-slate-600">
+                      {review.comment}
+                    </p>
+                  )}
+
+                </article>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+    </aside>
+
+  </div>
+
+</main>
 
     </div>
   );

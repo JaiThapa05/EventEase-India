@@ -22,7 +22,7 @@ function Profile() {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         setMessage("Please login first.");
@@ -31,7 +31,7 @@ function Profile() {
       }
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/profile",
+        "https://https://eventease-india-api.onrender.com/api/profile",
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -100,7 +100,7 @@ function Profile() {
 
   setPreviewPhoto(URL.createObjectURL(file));
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const data = new FormData();
   data.append("profile_photo", file);
@@ -109,7 +109,7 @@ function Profile() {
     setMessage("Uploading photo...");
 
     const response = await fetch(
-      "https://eventease-india.onrender.com/api/profile/photo",
+      "https://https://eventease-india-api.onrender.com/api/profile/photo",
       {
         method: "POST",
         headers: {
@@ -134,12 +134,12 @@ function Profile() {
     }));
 
     const user = JSON.parse(
-      localStorage.getItem("user") || "{}"
+      sessionStorage.getItem("user") || "{}"
     );
 
     user.profile_photo = result.profile_photo;
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       "user",
       JSON.stringify(user)
     );
@@ -162,7 +162,7 @@ function Profile() {
 
   if (!file) return;
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const data = new FormData();
 
@@ -173,7 +173,7 @@ function Profile() {
     setMessage("");
 
     const response = await fetch(
-      "https://eventease-india.onrender.com/api/profile/photo",
+      "https://https://eventease-india-api.onrender.com/api/profile/photo",
       {
         method: "POST",
 
@@ -204,13 +204,13 @@ function Profile() {
     // Update navbar user data
     const user =
       JSON.parse(
-        localStorage.getItem("user") || "{}"
+        sessionStorage.getItem("user") || "{}"
       );
 
     user.profile_photo =
       result.profile_photo;
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       "user",
       JSON.stringify(user)
     );
@@ -235,10 +235,10 @@ function Profile() {
     setSaving(true);
     setMessage("");
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     const response = await fetch(
-      "https://eventease-india.onrender.com/api/profile",
+      "https://https://eventease-india-api.onrender.com/api/profile",
       {
         method: "PUT",
 
@@ -272,9 +272,9 @@ function Profile() {
     // Reload latest profile
     await fetchProfile();
 
-    // Update localStorage user
+    // Update sessionStorage user
     const oldUser = JSON.parse(
-      localStorage.getItem("user") || "{}"
+      sessionStorage.getItem("user") || "{}"
     );
 
     const updatedUser = {
@@ -282,7 +282,7 @@ function Profile() {
       name: formData.name
     };
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       "user",
       JSON.stringify(updatedUser)
     );
@@ -377,7 +377,7 @@ function Profile() {
                 src={
                     previewPhoto.startsWith("http")
                     ? previewPhoto
-                    : `https://eventease-india.onrender.com${previewPhoto}`
+                    : `https://https://eventease-india-api.onrender.com${previewPhoto}`
                 }
                 alt={profile?.name || "Profile"}
                 className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-indigo-100"

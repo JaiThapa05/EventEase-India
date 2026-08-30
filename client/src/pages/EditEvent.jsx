@@ -53,7 +53,7 @@ function EditEvent() {
       setMessage("");
 
       const token =
-        localStorage.getItem("token");
+        sessionStorage.getItem("token");
 
       if (!token) {
         navigate("/login");
@@ -61,7 +61,7 @@ function EditEvent() {
       }
 
       const response = await fetch(
-        `https://eventease-india.onrender.com/api/events/${id}`
+        `https://https://eventease-india-api.onrender.com/api/events/${id}`
       );
 
       const data =
@@ -222,7 +222,7 @@ function EditEvent() {
       setMessage("");
 
       const token =
-        localStorage.getItem("token");
+        sessionStorage.getItem("token");
 
       if (!token) {
         navigate("/login");
@@ -442,7 +442,7 @@ function EditEvent() {
 
       const response =
         await fetch(
-          `https://eventease-india.onrender.com/api/events/${id}`,
+          `https://https://eventease-india-api.onrender.com/api/events/${id}`,
           {
             method: "PUT",
 
@@ -880,7 +880,7 @@ function EditEvent() {
                         "http"
                       )
                         ? formData.banner
-                        : `https://eventease-india.onrender.com${formData.banner}`
+                        : `https://https://eventease-india-api.onrender.com${formData.banner}`
                     }
                     alt="Event Banner"
                     className="h-64 w-full object-contain p-3"

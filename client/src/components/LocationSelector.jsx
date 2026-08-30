@@ -29,12 +29,12 @@ function LocationSelector({
     const loadStates = async () => {
       try {
         const token =
-          localStorage.getItem("token");
+          sessionStorage.getItem("token");
 
         setStatesLoading(true);
 
         const response = await fetch(
-          "https://eventease-india.onrender.com/api/profile/locations/states",
+          "https://eventease-india-api.onrender.com/api/profile/locations/states",
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -89,12 +89,12 @@ function LocationSelector({
       try {
 
         const token =
-          localStorage.getItem("token");
+          sessionStorage.getItem("token");
 
         setDistrictsLoading(true);
 
         const response = await fetch(
-          `https://eventease-india.onrender.com/api/profile/locations/districts/${stateId}`,
+          `https://eventease-india-api.onrender.com/api/profile/locations/districts/${stateId}`,
           {
             headers: {
               Authorization:
@@ -157,12 +157,12 @@ function LocationSelector({
         try {
 
           const token =
-            localStorage.getItem("token");
+            sessionStorage.getItem("token");
 
           setLocationsLoading(true);
 
           const url =
-            `https://eventease-india.onrender.com/api/profile/locations/search` +
+            `https://eventease-india-api.onrender.com/api/profile/locations/search` +
             `?districtId=${districtId}` +
             `&search=${encodeURIComponent(search)}`;
 
@@ -237,10 +237,10 @@ function LocationSelector({
       setSaving(true);
 
       const token =
-        localStorage.getItem("token");
+        sessionStorage.getItem("token");
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/profile/manual-location",
+        "https://eventease-india-api.onrender.com/api/profile/manual-location",
         {
           method: "POST",
 

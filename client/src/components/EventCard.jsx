@@ -8,7 +8,7 @@ function EventCard({ event }) {
   const imageUrl = event.banner
     ? event.banner.startsWith("http")
       ? event.banner
-      : `https://eventease-india.onrender.com${event.banner}`
+      : `https://https://eventease-india-api.onrender.com${event.banner}`
     : "";
 
 

@@ -1,5 +1,7 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API_URL from "../api";
 
 function Login() {
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ function Login() {
       setLoading(true);
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/auth/login",
+        `${API_URL}/api/auth/login`,
         {
           method: "POST",
           headers: {
@@ -52,37 +54,71 @@ function Login() {
 
       console.log("LOGIN RESPONSE:", data);
 
-      // Save token
-      localStorage.setItem("token", data.token);
+      // ========================================
+      // SAVE TOKEN
+      // ========================================
 
-      // Save user
-      localStorage.setItem(
+      sessionStorage.setItem(
+        "token",
+        data.token
+      );
+
+      // ========================================
+      // SAVE USER
+      // ========================================
+
+      sessionStorage.setItem(
         "user",
         JSON.stringify(data.user)
       );
 
-      setMessage("✅ Login successful!");
-
-      setTimeout(() => {
-      navigate("/");
-      }, 500);
-
-      setTimeout(() => {
       window.dispatchEvent(
-      new Event("open-location-popup")
+       new Event("auth-updated")
       );
-      }, 2000);
 
-      
-
-      // Go to Home page
-      setTimeout(() => {
+       setTimeout(() => {
         navigate("/");
       }, 500);
 
+      
+
+      // ========================================
+      // CLEAR OLD LOCATION FLAG
+      // ========================================
+      // Agar kisi previous user/device ka stale
+      // location flag pada ho toh remove karo.
+
+      if (data.user?.id) {
+        sessionStorage.removeItem(
+          `locationSaved_${data.user.id}`
+        );
+      }
+
+      // ========================================
+      // INFORM APP THAT USER LOGGED IN
+      // ========================================
+
+  
+
+      setMessage(
+        "✅ Login successful! Redirecting..."
+      );
+
+      // ========================================
+      // GO TO HOME
+      // ========================================
+
+     
+
     } catch (error) {
-      console.error("Login error:", error);
-      setMessage("❌ Cannot connect to server.");
+      console.error(
+        "LOGIN ERROR:",
+        error
+      );
+
+      setMessage(
+        "❌ Cannot connect to server."
+      );
     } finally {
       setLoading(false);
     }
@@ -92,6 +128,8 @@ function Login() {
     <div className="min-h-screen bg-slate-50 px-5 py-12">
 
       <div className="mx-auto max-w-md">
+
+        {/* HEADER */}
 
         <div className="mb-8 text-center">
 
@@ -109,6 +147,7 @@ function Login() {
 
         </div>
 
+        {/* FORM CARD */}
 
         <div className="rounded-3xl bg-white p-7 shadow-xl">
 
@@ -136,7 +175,6 @@ function Login() {
 
             </div>
 
-
             {/* PASSWORD */}
 
             <div>
@@ -156,7 +194,6 @@ function Login() {
 
             </div>
 
-
             {/* MESSAGE */}
 
             {message && (
@@ -165,19 +202,21 @@ function Login() {
               </div>
             )}
 
-
-            {/* BUTTON */}
+            {/* LOGIN BUTTON */}
 
             <button
               type="submit"
               disabled={loading}
               className="w-full rounded-xl bg-indigo-600 py-3.5 font-bold text-white transition hover:bg-indigo-700 disabled:opacity-60"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading
+                ? "Logging in..."
+                : "Login"}
             </button>
 
           </form>
 
+          {/* REGISTER */}
 
           <p className="mt-6 text-center text-sm text-slate-500">
 
@@ -201,3 +240,4 @@ function Login() {
 }
 
 export default Login;
+

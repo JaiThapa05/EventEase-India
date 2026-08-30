@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-
+import API_URL from "../api";
 function Register() {
   const [formData, setFormData] = useState({
     name: "",
@@ -34,7 +34,7 @@ function Register() {
 
   try {
     const response = await fetch(
-      "https://eventease-india.onrender.com/api/auth/register",
+      `${API_URL}/api/auth/register`,
       {
         method: "POST",
         headers: {

@@ -12,7 +12,7 @@ function Notifications() {
 
   const fetchNotifications = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         setMessage("Please login first.");
@@ -21,7 +21,7 @@ function Notifications() {
       }
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/notifications",
+        "https://https://eventease-india-api.onrender.com/api/notifications",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -53,10 +53,10 @@ function Notifications() {
 
   const markAsRead = async (notificationId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
-        `https://eventease-india.onrender.com/api/notifications/${notificationId}/read`,
+        `https://https://eventease-india-api.onrender.com/api/notifications/${notificationId}/read`,
         {
           method: "PUT",
           headers: {
@@ -92,10 +92,10 @@ function Notifications() {
 
   const markAllAsRead = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/notifications/read-all",
+        "https://https://eventease-india-api.onrender.com/api/notifications/read-all",
         {
           method: "PUT",
           headers: {
@@ -130,10 +130,10 @@ function Notifications() {
 
   const deleteNotification = async (notificationId) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
-        `https://eventease-india.onrender.com/api/notifications/${notificationId}`,
+        `https://https://eventease-india-api.onrender.com/api/notifications/${notificationId}`,
         {
           method: "DELETE",
           headers: {

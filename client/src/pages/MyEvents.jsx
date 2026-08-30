@@ -12,7 +12,7 @@ function MyEvents() {
 
   const fetchMyEvents = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         setMessage("Please login first.");
@@ -21,7 +21,7 @@ function MyEvents() {
       }
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/registrations/my-events",
+        "https://https://eventease-india-api.onrender.com/api/registrations/my-events",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -56,10 +56,10 @@ function MyEvents() {
     if (!confirmCancel) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const response = await fetch(
-        `https://eventease-india.onrender.com/api/registrations/${registrationId}`,
+        `https://https://eventease-india-api.onrender.com/api/registrations/${registrationId}`,
         {
           method: "DELETE",
 

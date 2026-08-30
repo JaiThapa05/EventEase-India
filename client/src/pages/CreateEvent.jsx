@@ -149,7 +149,7 @@ function CreateEvent() {
     // ========================================
 
     const token =
-      localStorage.getItem("token");
+      sessionStorage.getItem("token");
 
     if (!token) {
       setError(
@@ -353,7 +353,7 @@ function CreateEvent() {
 
     try {
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/events",
+        "https://https://eventease-india-api.onrender.com/api/events",
         {
           method: "POST",
 

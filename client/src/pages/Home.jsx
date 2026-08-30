@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import EventCard from "../components/EventCard";
 import { useEffect, useState } from "react";
 import LocationSelector from "../components/LocationSelector";
-
+import API_URL from "../api";
 function Home() {
   // ========================================
   // STATES
@@ -26,7 +26,7 @@ function Home() {
 
   useEffect(() => {
     const fetchUserLocation = async () => {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       // Guest user
       if (!token) {
@@ -40,13 +40,13 @@ function Home() {
 
       try {
         const response = await fetch(
-          "https://eventease-india.onrender.com/api/profile",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  `${API_URL}/api/profile`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
         if (!response.ok) {
           return;
@@ -115,9 +115,8 @@ useEffect(() => {
       setEventsLoading(true);
 
       const response = await fetch(
-        "https://eventease-india.onrender.com/api/events"
-      );
-
+  `${API_URL}/api/events`
+);
       const data = await response.json();
 
       if (!response.ok) {

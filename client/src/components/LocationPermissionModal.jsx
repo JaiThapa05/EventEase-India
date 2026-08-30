@@ -1,37 +1,88 @@
 import { useEffect, useState } from "react";
+import API_URL from "../api";
 
 function LocationPermissionModal() {
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-  const openPopup = () => {
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(
-      localStorage.getItem("user") || "null"
+    const checkLocation = async () => {
+      const token = sessionStorage.getItem("token");
+      const userString = sessionStorage.getItem("user");
+
+      if (!token || !userString) {
+        setShowModal(false);
+        return;
+      }
+
+      let user;
+
+      try {
+        user = JSON.parse(userString);
+      } catch {
+        setShowModal(false);
+        return;
+      }
+
+      if (!user?.id) {
+        setShowModal(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `${API_URL}/api/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          setShowModal(false);
+          return;
+        }
+
+        const data = await response.json();
+
+        const hasLocation =
+          data.location_city &&
+          data.location_state;
+
+        if (!hasLocation) {
+          setShowModal(true);
+        } else {
+          setShowModal(false);
+        }
+      } catch (error) {
+        console.error(
+          "LOCATION CHECK ERROR:",
+          error
+        );
+
+        setShowModal(false);
+      }
+    };
+
+    checkLocation();
+
+    const handleAuthUpdated = () => {
+      checkLocation();
+    };
+
+    window.addEventListener(
+      "auth-updated",
+      handleAuthUpdated
     );
 
-    // Sirf logged-in user
-    if (!token || !user?.id) {
-      return;
-    }
-
-    // Organizer ho ya participant — dono ke liye popup
-    setShowModal(true);
-  };
-
-  window.addEventListener(
-    "open-location-popup",
-    openPopup
-  );
-
-  return () => {
-    window.removeEventListener(
-      "open-location-popup",
-      openPopup
-    );
-  };
-}, []);
+    return () => {
+      window.removeEventListener(
+        "auth-updated",
+        handleAuthUpdated
+      );
+    };
+  }, []);
 
   const handleDeny = () => {
     setSaving(false);
@@ -39,7 +90,7 @@ function LocationPermissionModal() {
   };
 
   const handleAllow = () => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       setShowModal(false);
@@ -47,7 +98,9 @@ function LocationPermissionModal() {
     }
 
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported.");
+      alert(
+        "Geolocation is not supported by your browser."
+      );
       setShowModal(false);
       return;
     }
@@ -55,116 +108,116 @@ function LocationPermissionModal() {
     setSaving(true);
 
     navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const latitude =
+          position.coords.latitude;
 
-  async (position) => {
+        const longitude =
+          position.coords.longitude;
 
-    console.log("✅ GEOLOCATION SUCCESS");
+        console.log(
+          "📍 COORDINATES:",
+          latitude,
+          longitude
+        );
 
-    const latitude =
-      position.coords.latitude;
+        try {
+          const response = await fetch(
+            `${API_URL}/api/profile/location`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization:
+                  `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                latitude,
+                longitude,
+              }),
+            }
+          );
 
-    const longitude =
-      position.coords.longitude;
+          const data =
+            await response.json();
 
-    console.log(
-      "📍 COORDINATES:",
-      latitude,
-      longitude
-    );
+          console.log(
+            "LOCATION API RESPONSE:",
+            data
+          );
 
-    try {
+          if (!response.ok) {
+            throw new Error(
+              data.message ||
+              "Failed to save location"
+            );
+          }
 
-      const response = await fetch(
-        "https://eventease-india.onrender.com/api/profile/location",
-        {
-          method: "POST",
+          window.dispatchEvent(
+            new CustomEvent(
+              "location-updated",
+              {
+                detail: data.location,
+              }
+            )
+          );
 
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          const user =
+            JSON.parse(
+              sessionStorage.getItem(
+                "user"
+              ) || "null"
+            );
 
-          body: JSON.stringify({
-            latitude,
-            longitude,
-          }),
+          if (user?.id) {
+            sessionStorage.setItem(
+              `locationSaved_${user.id}`,
+              "true"
+            );
+          }
+
+          setSaving(false);
+          setShowModal(false);
+
+          console.log(
+            "✅ LOCATION SAVED"
+          );
+        } catch (error) {
+          console.error(
+            "❌ LOCATION SAVE ERROR:",
+            error
+          );
+
+          setSaving(false);
+          setShowModal(false);
+
+          alert(
+            error.message ||
+            "Unable to save your location."
+          );
         }
-      );
-
-      const data = await response.json();
-
-      console.log(
-        "LOCATION API RESPONSE:",
-        data
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-          "Failed to save location"
+      },
+      (error) => {
+        console.error(
+          "❌ GEOLOCATION ERROR:",
+          error.code,
+          error.message
         );
-      }
 
-      window.dispatchEvent(
-       new CustomEvent("location-updated", {
-       detail: data.location
-      })
-      );
+        setSaving(false);
+        setShowModal(false);
 
-      const user = JSON.parse(
-        localStorage.getItem("user") || "null"
-      );
-
-      if (user?.id) {
-        localStorage.setItem(
-          `locationSaved_${user.id}`,
-          "true"
+        alert(
+          `Location error: ${error.code} - ${error.message}`
         );
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 30000,
+        maximumAge: 600000,
       }
-
-      console.log("✅ LOCATION SAVED");
-
-      setSaving(false);
-      setShowModal(false);
-
-    } catch (error) {
-
-      console.error(
-        "❌ LOCATION SAVE ERROR:",
-        error
-      );
-
-      setSaving(false);
-      setShowModal(false);
-
-      alert(
-        "Unable to save your location."
-      );
-    }
-  },
-
-  (error) => {
-
-    console.error(
-      "❌ GEOLOCATION ERROR:",
-      error.code,
-      error.message
     );
-
-    setSaving(false);
-    setShowModal(false);
-
-    alert(
-      `Location error: ${error.code} - ${error.message}`
-    );
-  },
-
-  {
-    enableHighAccuracy: false,
-    timeout: 30000,
-    maximumAge: 600000,
-  }
-);
   };
 
   if (!showModal) {
@@ -184,12 +237,15 @@ function LocationPermissionModal() {
         </h2>
 
         <p className="mt-3 text-center leading-7 text-slate-500">
-          Allow EventEase to use your location so we can
-          help you discover events near you.
+          Allow EventEase to use your location
+          so we can help you discover events
+          near you.
         </p>
 
         <div className="mt-7 grid grid-cols-2 gap-3">
+
           <button
+            type="button"
             onClick={handleDeny}
             disabled={saving}
             className="rounded-xl border border-slate-200 px-5 py-3 font-bold text-slate-700 hover:bg-slate-100"
@@ -198,12 +254,16 @@ function LocationPermissionModal() {
           </button>
 
           <button
+            type="button"
             onClick={handleAllow}
             disabled={saving}
             className="rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white hover:bg-indigo-700"
           >
-            {saving ? "Getting Location..." : "Allow"}
+            {saving
+              ? "Getting Location..."
+              : "Allow"}
           </button>
+
         </div>
 
       </div>
