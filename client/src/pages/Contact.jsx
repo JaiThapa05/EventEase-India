@@ -25,7 +25,7 @@ function Contact() {
       setStatus("");
 
       const response = await fetch(
-        "https://https://eventease-india-api.onrender.com/api/contact",
+        "https://eventease-india-api.onrender.com/api/contact",
         {
           method: "POST",
           headers: {

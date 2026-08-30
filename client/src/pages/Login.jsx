@@ -72,9 +72,27 @@ function Login() {
         JSON.stringify(data.user)
       );
 
+      // Location popup ke liye flag
+      sessionStorage.setItem(
+      "showLocationPopup",
+      "true"
+      );
+
+      
+
+      // Inform app
+        
       window.dispatchEvent(
        new Event("auth-updated")
       );
+
+
+      setMessage("✅ Login successful! Redirecting...");
+      
+
+      
+
+      // Go Home
 
        setTimeout(() => {
         navigate("/");

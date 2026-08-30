@@ -1,8 +1,11 @@
+
 import { Link } from "react-router-dom";
-import EventCard from "../components/EventCard";
 import { useEffect, useState } from "react";
+
+import EventCard from "../components/EventCard";
 import LocationSelector from "../components/LocationSelector";
-import API_URL from "../api";
+import API_URL from "../config/api";
+
 function Home() {
   // ========================================
   // STATES
@@ -18,7 +21,6 @@ function Home() {
     city: "",
     state: "",
   });
-
 
   // ========================================
   // FETCH SAVED USER LOCATION
@@ -40,19 +42,25 @@ function Home() {
 
       try {
         const response = await fetch(
-  `${API_URL}/api/profile`,
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+          `${API_URL}/api/profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) {
+          console.error(
+            "PROFILE FETCH FAILED:",
+            response.status
+          );
           return;
         }
 
         const data = await response.json();
+
+        console.log("📍 SAVED USER LOCATION:", data);
 
         setUserLocation({
           city: data.location_city || "",
@@ -67,12 +75,51 @@ function Home() {
     };
 
     fetchUserLocation();
+  }, []);
 
+  // ========================================
+  // AUTOMATIC LOCATION POPUP
+  // ========================================
 
-    // ========================================
-    // LISTEN FOR LOCATION UPDATE
-    // ========================================
+  useEffect(() => {
+    const token = sessionStorage.getItem("token");
 
+    let user = null;
+
+    try {
+      user = JSON.parse(
+        sessionStorage.getItem("user") || "null"
+      );
+    } catch (error) {
+      console.error("USER JSON ERROR:", error);
+    }
+
+    // Sirf logged-in user ke liye
+    if (!token || !user?.id) {
+      return;
+    }
+
+    // Agar location already saved hai,
+    // to automatically popup nahi kholenge.
+    if (userLocation.city || userLocation.state) {
+      return;
+    }
+
+    // Home load hone ke baad popup
+    const timer = setTimeout(() => {
+      setShowLocationSelector(true);
+    }, 800);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [userLocation.city, userLocation.state]);
+
+  // ========================================
+  // LISTEN FOR LOCATION UPDATE
+  // ========================================
+
+  useEffect(() => {
     const handleLocationUpdated = (event) => {
       const location = event.detail || {};
 
@@ -85,6 +132,9 @@ function Home() {
         city: location.city || "",
         state: location.state || "",
       });
+
+      // Popup close
+      setShowLocationSelector(false);
     };
 
     window.addEventListener(
@@ -100,13 +150,8 @@ function Home() {
     };
   }, []);
 
-
-  // ========================================
-  // FETCH UPCOMING EVENTS
-  // ========================================
-
-  // ========================================
-// FETCH UPCOMING EVENTS FOR USER STATE
+  // // ========================================
+// FETCH UPCOMING EVENTS
 // ========================================
 
 useEffect(() => {
@@ -114,32 +159,111 @@ useEffect(() => {
     try {
       setEventsLoading(true);
 
-      const response = await fetch(
-  `${API_URL}/api/events`
-);
-      const data = await response.json();
+      const eventsUrl =
+        "https://eventease-india-api.onrender.com/api/events";
+
+      console.log("🌐 FETCHING EVENTS:", eventsUrl);
+
+      const response = await fetch(eventsUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      console.log(
+        "📡 EVENTS RESPONSE:",
+        response.status,
+        response.headers.get("content-type")
+      );
+
+      const text = await response.text();
+
+      console.log(
+        "📦 EVENTS RESPONSE PREVIEW:",
+        text.substring(0, 100)
+      );
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to load events"
+          `Events API failed: ${response.status}`
         );
       }
 
+      // Check that backend actually returned JSON
+      const contentType =
+        response.headers.get("content-type") || "";
+
+      if (!contentType.includes("application/json")) {
+        console.error(
+          "❌ BACKEND DID NOT RETURN JSON:",
+          text.substring(0, 500)
+        );
+
+        throw new Error(
+          "Events API returned HTML instead of JSON"
+        );
+      }
+
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        console.error(
+          "❌ JSON PARSE ERROR:",
+          text.substring(0, 500)
+        );
+
+        throw new Error(
+          "Invalid JSON received from Events API"
+        );
+      }
+
+      if (!Array.isArray(data)) {
+        console.error(
+          "❌ EVENTS DATA IS NOT ARRAY:",
+          data
+        );
+
+        throw new Error(
+          "Invalid events data received"
+        );
+      }
+
+      console.log(
+        "✅ EVENTS RECEIVED:",
+        data.length
+      );
+
+      // ========================================
+      // TODAY
+      // ========================================
+
       const today = new Date();
+
       today.setHours(0, 0, 0, 0);
 
-      // User ki saved state
+      // ========================================
+      // USER STATE
+      // ========================================
+
       const userState =
-        userLocation.state?.trim().toLowerCase() || "";
+        userLocation.state
+          ?.trim()
+          .toLowerCase() || "";
+
+      // ========================================
+      // FILTER
+      // ========================================
 
       const futureEvents = data
         .filter((event) => {
-          // Date required
           if (!event.event_date) {
             return false;
           }
 
-          // Dehradun Tech Fest hide
+          // Hide Dehradun Tech Fest
           if (
             event.title
               ?.trim()
@@ -149,15 +273,20 @@ useEffect(() => {
             return false;
           }
 
-          // Date check
+          // Date
           const dateString = String(
             event.event_date
           ).substring(0, 10);
 
+          const parts =
+            dateString.split("-");
+
+          if (parts.length !== 3) {
+            return false;
+          }
+
           const [year, month, day] =
-            dateString
-              .split("-")
-              .map(Number);
+            parts.map(Number);
 
           const eventDate = new Date(
             year,
@@ -165,6 +294,15 @@ useEffect(() => {
             day
           );
 
+          if (
+            Number.isNaN(
+              eventDate.getTime()
+            )
+          ) {
+            return false;
+          }
+
+          // Only today + future
           if (eventDate < today) {
             return false;
           }
@@ -173,20 +311,16 @@ useEffect(() => {
           // LOCATION FILTER
           // ========================================
 
-          // User location available hai
           if (userState) {
             const eventLocation =
               event.location
                 ?.trim()
                 .toLowerCase() || "";
 
-            // State name event.location me hai
-            // Example:
-            // "Dehradun, Uttarakhand"
-            // "Nainital, Uttarakhand"
-
             if (
-              !eventLocation.includes(userState)
+              !eventLocation.includes(
+                userState
+              )
             ) {
               return false;
             }
@@ -203,35 +337,36 @@ useEffect(() => {
             b.event_date
           ).substring(0, 10);
 
-          return dateA.localeCompare(dateB);
+          return dateA.localeCompare(
+            dateB
+          );
         })
         .slice(0, 5);
+
+      console.log(
+        "📅 UPCOMING EVENTS:",
+        futureEvents
+      );
 
       setUpcomingEvents(
         futureEvents
       );
 
     } catch (error) {
-
       console.error(
-        "UPCOMING EVENTS ERROR:",
+        "❌ UPCOMING EVENTS ERROR:",
         error
       );
 
       setUpcomingEvents([]);
 
     } finally {
-
       setEventsLoading(false);
-
     }
   };
 
   fetchUpcomingEvents();
-
 }, [userLocation.state]);
-
-
   // ========================================
   // LOCATION DISPLAY
   // ========================================
@@ -245,7 +380,6 @@ useEffect(() => {
       : userLocation.city
       ? userLocation.city
       : "All India";
-
 
   // ========================================
   // RENDER
@@ -271,7 +405,8 @@ useEffect(() => {
           style={{
             backgroundImage:
               "radial-gradient(white 1px, transparent 1px)",
-            backgroundSize: "25px 25px",
+            backgroundSize:
+              "25px 25px",
           }}
         />
 
@@ -283,27 +418,29 @@ useEffect(() => {
             🇮🇳 Discover Events Across India
           </div>
 
-
           {/* Heading */}
 
           <h1 className="mx-auto mt-7 max-w-4xl text-5xl font-black tracking-tight text-white md:text-7xl">
+
             Find Your Next
 
             <span className="block bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-400 bg-clip-text text-transparent">
               Great Experience
             </span>
-          </h1>
 
+          </h1>
 
           {/* Description */}
 
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300">
-            Discover technology, education, business, sports and
-            cultural events happening across India.
+            Discover technology, education,
+            business, sports and cultural
+            events happening across India.
           </p>
 
-
-          {/* SEARCH BOX */}
+          {/* ========================================
+              SEARCH BOX
+          ======================================== */}
 
           <div className="mx-auto mt-10 flex max-w-3xl flex-col gap-3 rounded-2xl bg-white p-3 shadow-2xl md:flex-row">
 
@@ -323,13 +460,14 @@ useEffect(() => {
 
             </div>
 
-
             {/* LOCATION */}
 
             <button
               type="button"
               onClick={() =>
-                setShowLocationSelector(true)
+                setShowLocationSelector(
+                  true
+                )
               }
               className="flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-1 text-left transition hover:bg-indigo-50 md:w-52"
             >
@@ -348,7 +486,6 @@ useEffect(() => {
 
             </button>
 
-
             {/* SEARCH BUTTON */}
 
             <Link
@@ -360,8 +497,9 @@ useEffect(() => {
 
           </div>
 
-
-          {/* QUICK STATS */}
+          {/* ========================================
+              QUICK STATS
+          ======================================== */}
 
           <div className="mx-auto mt-12 flex max-w-lg justify-center gap-10 border-t border-white/10 pt-8">
 
@@ -375,7 +513,6 @@ useEffect(() => {
               </p>
             </div>
 
-
             <div>
               <p className="text-2xl font-black text-white">
                 25+
@@ -385,7 +522,6 @@ useEffect(() => {
                 Cities
               </p>
             </div>
-
 
             <div>
               <p className="text-2xl font-black text-white">
@@ -402,7 +538,6 @@ useEffect(() => {
         </div>
 
       </section>
-
 
       {/* ========================================
           CATEGORIES
@@ -421,12 +556,11 @@ useEffect(() => {
           </h2>
 
           <p className="mx-auto mt-3 max-w-xl text-slate-500">
-            Explore events based on your interests and discover
-            something exciting near you.
+            Explore events based on your interests
+            and discover something exciting near you.
           </p>
 
         </div>
-
 
         <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
 
@@ -440,7 +574,9 @@ useEffect(() => {
           ].map(([icon, category]) => (
 
             <Link
-              to={`/events?category=${encodeURIComponent(category)}`}
+              to={`/events?category=${encodeURIComponent(
+                category
+              )}`}
               key={category}
               className="group rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-sm transition hover:-translate-y-1 hover:border-indigo-200 hover:shadow-lg"
             >
@@ -460,7 +596,6 @@ useEffect(() => {
         </div>
 
       </section>
-
 
       {/* ========================================
           UPCOMING EVENTS
@@ -493,7 +628,6 @@ useEffect(() => {
 
           </div>
 
-
           {/* EVENT CARDS */}
 
           <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -501,9 +635,11 @@ useEffect(() => {
             {eventsLoading ? (
 
               <div className="col-span-full rounded-2xl border border-slate-200 bg-slate-50 p-10 text-center">
+
                 <p className="font-semibold text-slate-500">
                   Loading upcoming events...
                 </p>
+
               </div>
 
             ) : upcomingEvents.length === 0 ? (
@@ -526,12 +662,14 @@ useEffect(() => {
 
             ) : (
 
-              upcomingEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                />
-              ))
+              upcomingEvents.map(
+                (event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                  />
+                )
+              )
 
             )}
 
@@ -540,7 +678,6 @@ useEffect(() => {
         </div>
 
       </section>
-
 
       {/* ========================================
           WHY EVENTEASE
@@ -560,7 +697,6 @@ useEffect(() => {
 
         </div>
 
-
         <div className="mt-12 grid gap-6 md:grid-cols-3">
 
           {/* Feature 1 */}
@@ -576,12 +712,11 @@ useEffect(() => {
             </h3>
 
             <p className="mt-3 leading-7 text-slate-500">
-              Find interesting events happening in your city
-              or anywhere across India.
+              Find interesting events happening
+              in your city or anywhere across India.
             </p>
 
           </div>
-
 
           {/* Feature 2 */}
 
@@ -596,12 +731,11 @@ useEffect(() => {
             </h3>
 
             <p className="mt-3 leading-7 text-slate-500">
-              Register for events easily and keep track of
-              everything you have joined.
+              Register for events easily and keep
+              track of everything you have joined.
             </p>
 
           </div>
-
 
           {/* Feature 3 */}
 
@@ -616,8 +750,8 @@ useEffect(() => {
             </h3>
 
             <p className="mt-3 leading-7 text-slate-500">
-              Never miss important event updates, schedules
-              and reminders.
+              Never miss important event updates,
+              schedules and reminders.
             </p>
 
           </div>
@@ -625,7 +759,6 @@ useEffect(() => {
         </div>
 
       </section>
-
 
       {/* ========================================
           ORGANIZER CTA
@@ -640,7 +773,8 @@ useEffect(() => {
             style={{
               backgroundImage:
                 "radial-gradient(white 1px, transparent 1px)",
-              backgroundSize: "20px 20px",
+              backgroundSize:
+                "20px 20px",
             }}
           />
 
@@ -655,8 +789,8 @@ useEffect(() => {
             </h2>
 
             <p className="mx-auto mt-4 max-w-xl leading-7 text-indigo-100">
-              Create your event, reach participants and manage
-              registrations from one place.
+              Create your event, reach participants
+              and manage registrations from one place.
             </p>
 
             <Link
@@ -672,7 +806,6 @@ useEffect(() => {
 
       </section>
 
-
       {/* ========================================
           LOCATION SELECTOR
       ======================================== */}
@@ -680,14 +813,25 @@ useEffect(() => {
       {showLocationSelector && (
         <LocationSelector
           currentLocation={userLocation}
-          onClose={() =>
-            setShowLocationSelector(false)
-          }
+
+          onClose={() => {
+            setShowLocationSelector(false);
+          }}
+
           onLocationUpdated={(location) => {
+
+            console.log(
+              "📍 LOCATION SELECTOR RETURNED:",
+              location
+            );
+
             setUserLocation({
-              city: location.city || "",
-              state: location.state || "",
+              city: location?.city || "",
+              state: location?.state || "",
             });
+
+            setShowLocationSelector(false);
+
           }}
         />
       )}

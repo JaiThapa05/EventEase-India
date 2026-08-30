@@ -21,7 +21,7 @@ function Notifications() {
       }
 
       const response = await fetch(
-        "https://https://eventease-india-api.onrender.com/api/notifications",
+        "https://eventease-india-api.onrender.com/api/notifications",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -56,7 +56,7 @@ function Notifications() {
       const token = sessionStorage.getItem("token");
 
       const response = await fetch(
-        `https://https://eventease-india-api.onrender.com/api/notifications/${notificationId}/read`,
+        `https://eventease-india-api.onrender.com/api/notifications/${notificationId}/read`,
         {
           method: "PUT",
           headers: {
@@ -95,7 +95,7 @@ function Notifications() {
       const token = sessionStorage.getItem("token");
 
       const response = await fetch(
-        "https://https://eventease-india-api.onrender.com/api/notifications/read-all",
+        "https://eventease-india-api.onrender.com/api/notifications/read-all",
         {
           method: "PUT",
           headers: {
@@ -133,7 +133,7 @@ function Notifications() {
       const token = sessionStorage.getItem("token");
 
       const response = await fetch(
-        `https://https://eventease-india-api.onrender.com/api/notifications/${notificationId}`,
+        `https://eventease-india-api.onrender.com/api/notifications/${notificationId}`,
         {
           method: "DELETE",
           headers: {

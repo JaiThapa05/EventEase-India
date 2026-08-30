@@ -5,11 +5,36 @@ function EventCard({ event }) {
   // IMAGE URL
   // ========================================
 
-  const imageUrl = event.banner
-    ? event.banner.startsWith("http")
-      ? event.banner
-      : `https://https://eventease-india-api.onrender.com${event.banner}`
-    : "";
+  const imageUrl = (() => {
+  if (!event.banner) {
+    return "";
+  }
+
+  let banner = String(event.banner).trim();
+
+  // Already complete URL
+  if (banner.startsWith("http://") || banner.startsWith("https://")) {
+    return banner;
+  }
+
+  // Fix accidental "https//" without colon
+  if (banner.startsWith("https//")) {
+    banner = banner.replace("https//", "https://");
+    return banner;
+  }
+
+  if (banner.startsWith("http//")) {
+    banner = banner.replace("http//", "http://");
+    return banner;
+  }
+
+  // Relative upload path
+  if (!banner.startsWith("/")) {
+    banner = `/${banner}`;
+  }
+
+  return `https://eventease-india-api.onrender.com${banner}`;
+})();
 
 
   // ========================================
