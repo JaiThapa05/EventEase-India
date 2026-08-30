@@ -4,12 +4,6 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
-console.log("EMAIL USER:", process.env.EMAIL_USER);
-console.log(
-  "EMAIL PASS EXISTS:",
-  !!process.env.EMAIL_PASS
-);
-
 const db = require("./config/db");
 
 // ========================================
@@ -18,9 +12,7 @@ const db = require("./config/db");
 
 const app = express();
 
-const PORT =
-  process.env.PORT || 5000;
-
+const PORT = process.env.PORT || 5000;
 
 // ========================================
 // ROUTES
@@ -34,42 +26,49 @@ const registrationRoutes = require("./routes/registrationRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 
-
 // ========================================
 // AUTH MIDDLEWARE
 // ========================================
 
-const {
-  protect
-} = require("./middleware/authMiddleware");
-
+const { protect } = require("./middleware/authMiddleware");
 
 // ========================================
 // GLOBAL MIDDLEWARE
 // ========================================
 
-
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "EventEase India API is running 🚀",
-    server: "Render",
-    database: process.env.DB_NAME || "NOT CONFIGURED"
-  });
-});
-
-app.use(cors());
-
 app.use(
-  express.json()
-);
-
-app.use(
-  express.urlencoded({
-    extended: true
+  cors({
+    origin: true,
+    credentials: true,
   })
 );
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ========================================
+// HEALTH CHECK
+// ========================================
+
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "EventEase India API is running 🚀",
+    server: "Render",
+    database: process.env.DB_NAME || "NOT CONFIGURED",
+  });
+});
+
+// ========================================
+// API TEST
+// ========================================
+
+app.get("/api/test", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "API is working",
+  });
+});
 
 // ========================================
 // STATIC UPLOADS
@@ -77,133 +76,102 @@ app.use(
 
 app.use(
   "/uploads",
-  express.static(
-    path.join(
-      __dirname,
-      "uploads"
-    )
-  )
+  express.static(path.join(__dirname, "uploads"))
 );
-
 
 // ========================================
 // API ROUTES
 // ========================================
 
-app.use(
-  "/api/auth",
-  authRoutes
-);
+app.use("/api/auth", authRoutes);
 
-app.use(
-  "/api/events",
-  eventRoutes
-);
+app.use("/api/events", eventRoutes);
 
-app.use(
-  "/api/registrations",
-  registrationRoutes
-);
+app.use("/api/registrations", registrationRoutes);
 
-app.use(
-  "/api/notifications",
-  notificationRoutes
-);
+app.use("/api/notifications", notificationRoutes);
 
-app.use(
-  "/api/reviews",
-  reviewRoutes
-);
+app.use("/api/reviews", reviewRoutes);
 
-app.use(
-  "/api/profile",
-  profileRoutes
-);
+app.use("/api/profile", profileRoutes);
 
-app.use(
-  "/api/contact",
-  contactRoutes
-);
-
+app.use("/api/contact", contactRoutes);
 
 // ========================================
-// TEST SINGLE EVENT ROUTE
+// TEST SINGLE EVENT
 // ========================================
 
-app.get(
-  "/test-event/:id",
-  async (req, res) => {
+app.get("/test-event/:id", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM events WHERE id = ?",
+      [req.params.id]
+    );
 
-    try {
-
-      const [rows] =
-        await db.query(
-          "SELECT * FROM events WHERE id = ?",
-          [req.params.id]
-        );
-
-      if (rows.length === 0) {
-        return res.status(404).json({
-          message:
-            "Event not found"
-        });
-      }
-
-      res.json(
-        rows[0]
-      );
-
-    } catch (error) {
-
-      console.error(
-        "TEST EVENT ERROR:",
-        error
-      );
-
-      res.status(500).json({
-        message:
-          "Database error",
-        error:
-          error.message
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
       });
     }
-  }
-);
 
+    return res.status(200).json({
+      success: true,
+      event: rows[0],
+    });
+  } catch (error) {
+    console.error("TEST EVENT ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Database error",
+      error: error.message,
+    });
+  }
+});
 
 // ========================================
 // AUTH TEST
-// GET /api/auth/me
 // ========================================
 
-app.get(
-  "/api/auth/me",
-  protect,
-  (req, res) => {
+app.get("/api/auth/me", protect, (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "You are authenticated!",
+    user: req.user,
+  });
+});
 
-    res.json({
-      success: true,
-      message:
-        "You are authenticated!",
-      user:
-        req.user
-    });
+// ========================================
+// 404 API HANDLER
+// ========================================
 
-  }
-);
+app.use("/api", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API route not found",
+    path: req.originalUrl,
+  });
+});
 
+// ========================================
+// GLOBAL ERROR HANDLER
+// ========================================
+
+app.use((err, req, res, next) => {
+  console.error("SERVER ERROR:", err);
+
+  res.status(500).json({
+    success: false,
+    message: "Internal server error",
+    error: err.message,
+  });
+});
 
 // ========================================
 // START SERVER
 // ========================================
 
-app.listen(
-  PORT,
-  () => {
-
-    console.log(
-    `🚀 Server running on port ${PORT}`
-    );
-
-  }
-);
+app.listen(PORT, () => {
+  console.log(`🚀 EventEase API running on port ${PORT}`);
+});
