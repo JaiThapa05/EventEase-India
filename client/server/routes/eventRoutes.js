@@ -110,8 +110,8 @@ router.post(
 router.get("/", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM events ORDER BY id DESC"
-    );
+    "SELECT * FROM events ORDER BY event_date ASC, event_time ASC"
+  );
 
     res.json(rows);
 
