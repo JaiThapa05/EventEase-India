@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+
 import EventCard from "../components/EventCard";
-import API_URL from "../services/api";
+import API_URL from "../config/api";
 
 function Events() {
   const [events, setEvents] = useState([]);
@@ -24,7 +25,6 @@ function Events() {
     }
 
     const dateString = String(eventDate).substring(0, 10);
-
     const parts = dateString.split("-");
 
     if (parts.length !== 3) {
@@ -112,28 +112,135 @@ function Events() {
       setLoading(true);
       setError("");
 
-      // IMPORTANT:
-      // API_URL comes from services/api.js
-      const response = await fetch(
-        `${API_URL}/api/events`
+      const eventsUrl = `${API_URL}/api/events`;
+
+      console.log("================================");
+      console.log("🌐 EVENTS API URL:");
+      console.log(eventsUrl);
+      console.log("================================");
+
+      const response = await fetch(eventsUrl, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+        cache: "no-cache",
+      });
+
+      console.log("📡 EVENTS STATUS:", response.status);
+      console.log(
+        "📡 EVENTS CONTENT TYPE:",
+        response.headers.get("content-type")
       );
 
-      const data = await response.json();
+      // ----------------------------------------
+      // READ RESPONSE AS TEXT FIRST
+      // ----------------------------------------
+
+      const responseText = await response.text();
+
+      console.log(
+        "📦 EVENTS RESPONSE:",
+        responseText.substring(0, 500)
+      );
+
+      // ----------------------------------------
+      // CHECK HTTP STATUS
+      // ----------------------------------------
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to load events"
+          `Events API failed: ${response.status}`
         );
       }
 
-      setEvents(
-        Array.isArray(data) ? data : []
+      // ----------------------------------------
+      // CHECK JSON
+      // ----------------------------------------
+
+      const contentType =
+        response.headers.get("content-type") || "";
+
+      if (
+        !contentType
+          .toLowerCase()
+          .includes("application/json")
+      ) {
+        console.error(
+          "❌ API DID NOT RETURN JSON"
+        );
+
+        console.error(
+          "Response:",
+          responseText.substring(0, 1000)
+        );
+
+        throw new Error(
+          "Events API returned HTML instead of JSON. Check API URL."
+        );
+      }
+
+      // ----------------------------------------
+      // PARSE JSON
+      // ----------------------------------------
+
+      let data;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error(
+          "❌ JSON PARSE ERROR:",
+          parseError
+        );
+
+        console.error(
+          "RAW RESPONSE:",
+          responseText
+        );
+
+        throw new Error(
+          "Invalid JSON received from Events API."
+        );
+      }
+
+      // ----------------------------------------
+      // CHECK ARRAY
+      // ----------------------------------------
+
+      if (!Array.isArray(data)) {
+        console.error(
+          "❌ EVENTS RESPONSE IS NOT ARRAY:",
+          data
+        );
+
+        throw new Error(
+          "Invalid events data received from server."
+        );
+      }
+
+      console.log(
+        "✅ EVENTS RECEIVED:",
+        data.length
       );
+
+      // ----------------------------------------
+      // SAVE EVENTS
+      // ----------------------------------------
+
+      setEvents(data);
+
     } catch (err) {
-      console.error("EVENTS ERROR:", err);
+      console.error(
+        "❌ EVENTS FETCH ERROR:",
+        err
+      );
+
+      setEvents([]);
 
       setError(
-        err.message || "Unable to load events."
+        err.message ||
+          "Unable to load events. Please try again."
       );
     } finally {
       setLoading(false);
@@ -149,7 +256,7 @@ function Events() {
   }, []);
 
   // ========================================
-  // URL CATEGORY
+  // READ CATEGORY FROM URL
   // ========================================
 
   useEffect(() => {
@@ -173,23 +280,30 @@ function Events() {
       location.toLowerCase().trim();
 
     const title =
-      event.title?.toLowerCase() || "";
+      String(event.title || "").toLowerCase();
 
     const description =
-      event.description?.toLowerCase() || "";
+      String(event.description || "").toLowerCase();
 
     const eventLocation =
-      event.location?.toLowerCase() || "";
+      String(event.location || "").toLowerCase();
 
+    const eventCategory =
+      String(event.category || "").trim();
+
+    // Search
     const matchesSearch =
       !searchText ||
       title.includes(searchText) ||
       description.includes(searchText);
 
+    // Category
     const matchesCategory =
       category === "All" ||
-      event.category === category;
+      eventCategory.toLowerCase() ===
+        category.toLowerCase();
 
+    // Location
     const matchesLocation =
       !locationText ||
       eventLocation.includes(locationText);
@@ -221,19 +335,20 @@ function Events() {
   // PREPARE EVENTS
   // ========================================
 
-  const formattedEvents = filteredEvents.map(
-    (event) => ({
+  const formattedEvents =
+    filteredEvents.map((event) => ({
       ...event,
 
-      formatted_date: formatEventDate(
-        event.event_date
-      ),
+      formatted_date:
+        formatEventDate(
+          event.event_date
+        ),
 
-      formatted_time: formatEventTime(
-        event.event_time
-      ),
-    })
-  );
+      formatted_time:
+        formatEventTime(
+          event.event_time
+        ),
+    }));
 
   // ========================================
   // UI
@@ -401,6 +516,7 @@ function Events() {
                   </p>
 
                   <button
+                    type="button"
                     onClick={clearFilters}
                     className="w-full rounded-xl bg-slate-100 px-5 py-2.5 font-bold text-slate-700 transition hover:bg-slate-200 sm:w-auto"
                   >
@@ -451,6 +567,7 @@ function Events() {
               </p>
 
               <button
+                type="button"
                 onClick={fetchEvents}
                 className="mt-5 w-full rounded-xl bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700 sm:w-auto"
               >
@@ -518,6 +635,7 @@ function Events() {
               </p>
 
               <button
+                type="button"
                 onClick={clearFilters}
                 className="mt-6 rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white hover:bg-indigo-700"
               >
@@ -558,3 +676,4 @@ function Events() {
 }
 
 export default Events;
+
