@@ -17,10 +17,15 @@ import Calendar from "./pages/Calendar";
 import Participants from "./pages/Participants";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
+import ScrollToTop from "./components/ScrollToTop";
+
 
 function App() {
   return (
     <BrowserRouter>
+
+    
+    <ScrollToTop />
 
       {/* NAVBAR */}
 
